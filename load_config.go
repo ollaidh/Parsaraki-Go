@@ -8,9 +8,12 @@ import (
 
 type Config struct {
 	TelegramBot struct {
-		Url   string `json:"url"`
-		Token string `json:"token"`
-		Id    string `json:"id"`
+		Url                 string `json:"url"`
+		Token               string `json:"token"`
+		Id                  string `json:"id"`
+		WebhooksUrl         string `json:"webhooksUrl"`
+		WebhooksEp          string `json:"webhooksEp"`
+		WebhooksSecretToken string `json:"webhooksSecretToken"`
 	} `json:"telegramBot"`
 }
 

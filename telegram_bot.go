@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,11 +11,16 @@ import (
 	"strconv"
 )
 
-func pingBot() {
-	url, err := url.JoinPath(
+func getReqUrl(method string) string {
+	result, _ := url.JoinPath(
 		CONFIG.TelegramBot.Url,
 		"bot"+CONFIG.TelegramBot.Token,
-		"getMe")
+		method)
+	return result
+}
+
+func pingBot() {
+	url := getReqUrl("getMe")
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Print(err)
@@ -47,5 +53,27 @@ func pingBot() {
 	} else {
 		log.Printf("Bot Check Successful!")
 	}
+
+}
+
+func setWebhook() {
+	url := getReqUrl("setWebhook")
+
+	payload := map[string]interface{}{
+		"url":          CONFIG.TelegramBot.WebhooksUrl,
+		"secret_token": CONFIG.TelegramBot.WebhooksSecretToken,
+	}
+
+	body, _ := json.Marshal(payload)
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(body))
+
+	rrr, _ := io.ReadAll(resp.Body)
+
+	fmt.Println(string(rrr))
+	if err != nil {
+		fmt.Print(err)
+	}
+	defer resp.Body.Close()
 
 }
