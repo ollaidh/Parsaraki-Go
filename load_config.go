@@ -15,6 +15,7 @@ type Config struct {
 		WebhooksEp          string `json:"webhooksEp"`
 		WebhooksSecretToken string `json:"webhooksSecretToken"`
 	} `json:"telegramBot"`
+	Mode string `json:"mode"`
 }
 
 func loadConfig() Config {

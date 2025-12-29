@@ -60,7 +60,7 @@ func setWebhook() {
 	url := getReqUrl("setWebhook")
 
 	payload := map[string]interface{}{
-		"url":          CONFIG.TelegramBot.WebhooksUrl,
+		"url":          CONFIG.TelegramBot.WebhooksUrl + CONFIG.TelegramBot.WebhooksEp,
 		"secret_token": CONFIG.TelegramBot.WebhooksSecretToken,
 	}
 
@@ -71,6 +71,7 @@ func setWebhook() {
 	rrr, _ := io.ReadAll(resp.Body)
 
 	fmt.Println(string(rrr))
+
 	if err != nil {
 		fmt.Print(err)
 	}
