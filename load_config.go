@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Mode        string `json:"mode"`
 	TelegramBot struct {
 		Url                 string `json:"url"`
 		Token               string `json:"token"`
@@ -15,12 +16,14 @@ type Config struct {
 		WebhooksEp          string `json:"webhooksEp"`
 		WebhooksSecretToken string `json:"webhooksSecretToken"`
 	} `json:"telegramBot"`
-	Mode     string `json:"mode"`
+	Gateway struct {
+		Port string `json:"port"`
+	} `json:"gateway"`
 	Webhooks struct {
 		GatewayWebhooksUrl  string `json:"gatewayWebhooksUrl"`
 		GatewayWebhooksEp   string `json:"gatewayWebhooksEp"`
 		WebhooksSecretToken string `json:"webhooksSecretToken"`
-	}
+	} `json:"webhooks"`
 }
 
 func loadConfig() Config {

@@ -24,14 +24,14 @@ func main() {
 
 	// launch server at 8443 port
 	go func() {
-		if err := http.ListenAndServe(":8443", nil); err != nil {
+		if err := http.ListenAndServe(":"+CONFIG.Gateway.Port, nil); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
 	// use ngrok to get https address for dev
 	if CONFIG.Mode == "DEV" {
-		cmdNgrok, err := startNgrok("8443")
+		cmdNgrok, err := startNgrok(CONFIG.Gateway.Port)
 		if err != nil {
 			panic(err)
 		}
