@@ -41,7 +41,7 @@ func main() {
 
 	fmt.Println("Ngrok public URL:", urlForWebhook)
 
-	CONFIG.TelegramBot.WebhooksUrl = urlForWebhook
+	CONFIG.Webhooks.GatewayWebhooksUrl = urlForWebhook
 
 	setWebhook()
 

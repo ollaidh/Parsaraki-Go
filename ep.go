@@ -8,7 +8,7 @@ import (
 
 func ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
 	telegramBotApiSecretToken := request.Header.Get("X-Telegram-Bot-Api-Secret-Token")
-	if telegramBotApiSecretToken != CONFIG.TelegramBot.WebhooksSecretToken {
+	if telegramBotApiSecretToken != CONFIG.Webhooks.WebhooksSecretToken {
 		http.Error(w, "Incorrect secret token in request header!", http.StatusBadRequest)
 	} else {
 		defer request.Body.Close()
