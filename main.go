@@ -22,29 +22,35 @@ func main() {
 	// EP for Telegram Bot Webhook
 	http.HandleFunc("/bot-message", ProcessBotMessage)
 
+	// launch server at 8443 port
 	go func() {
 		if err := http.ListenAndServe(":8443", nil); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	cmdNgrok, err := startNgrok("8443")
-	if err != nil {
-		panic(err)
+	// use ngrok to get https address for dev
+	if CONFIG.Mode == "DEV" {
+		cmdNgrok, err := startNgrok("8443")
+		if err != nil {
+			panic(err)
+		}
+		defer cmdNgrok.Process.Kill()
+
+		urlForWebhook, err := waitForURL(5 * time.Second)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Ngrok public URL:", urlForWebhook)
+
+		CONFIG.Webhooks.GatewayWebhooksUrl = urlForWebhook
 	}
-	defer cmdNgrok.Process.Kill()
 
-	urlForWebhook, err := waitForURL(5 * time.Second)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Ngrok public URL:", urlForWebhook)
-
-	CONFIG.Webhooks.GatewayWebhooksUrl = urlForWebhook
-
+	// set webhook for bot
 	setWebhook()
 
+	// wait for Ctrl+C sugnal tp stop the app
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	<-sigCh
