@@ -2,10 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 )
 
 func ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
@@ -13,6 +11,7 @@ func ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
 	if telegramBotApiSecretToken != CONFIG.Webhooks.WebhooksSecretToken {
 		http.Error(w, "Incorrect secret token in request header!", http.StatusBadRequest)
 	} else {
+		println("GOT REQUEST")
 		defer request.Body.Close()
 
 		body, err := io.ReadAll(request.Body)
@@ -25,13 +24,37 @@ func ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		msg := fmt.Sprintf("Got message from username=%s, message_id=%s, message: %s", botMsg.Message.From.Username, strconv.Itoa(botMsg.Message.MessageID), botMsg.Message.Text)
+		// msg := fmt.Sprintf("Got message from username=%s, message_id=%s, message: %s", botMsg.Message.From.Username, strconv.Itoa(botMsg.Message.MessageID), botMsg.Message.Text)
 
-		fmt.Println(msg)
-		fmt.Println(string(body))
+		// fmt.Println(msg)
+		// fmt.Println(string(body))
 
-		msgBack := fmt.Sprintf("Thank you for your message, you sent '%s'", botMsg.Message.Text)
-		sendMessage(msgBack, botMsg.Message.Chat.ID)
+		// msgBack := fmt.Sprintf("Thank you for your message, you sent '%s'", botMsg.Message.Text)
+		// sendMessage(msgBack, botMsg.Message.Chat.ID)
+
+		commandHandlers := map[string]RequestHandler{
+			"/start":      StartHandler{},
+			"/info":       BotInfoHandler{},
+			"/statistics": GetStatisticsHandler{},
+			"other":       NotACommandHandler{},
+		}
+
+		entities := botMsg.Message.Entities
+
+		var cmd string
+
+		if len(entities) > 0 {
+			cmd = botMsg.Message.Text
+		} else {
+			cmd = "others"
+		}
+
+		commandHandler, ok := commandHandlers[cmd]
+		if !ok {
+			commandHandler = NotACommandHandler{}
+		}
+
+		commandHandler.Execute(botMsg)
 
 	}
 
