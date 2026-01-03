@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// message from bot structure - received by webhook update
 type BotMessage struct {
 	UpdateID int `json:"update_id"`
 	Message  struct {
@@ -41,6 +42,7 @@ type BotMessage struct {
 	} `json:"message"`
 }
 
+// get bot url to use methods
 func getReqUrl(method string) string {
 	result, _ := url.JoinPath(
 		CONFIG.TelegramBot.Url,
@@ -49,6 +51,7 @@ func getReqUrl(method string) string {
 	return result
 }
 
+// check if bot is functioning
 func pingBot() {
 	url := getReqUrl("getMe")
 	response, err := http.Get(url)
@@ -86,6 +89,7 @@ func pingBot() {
 
 }
 
+// set bot updates webhook
 func setWebhook() {
 	url := getReqUrl("setWebhook")
 
@@ -109,6 +113,7 @@ func setWebhook() {
 
 }
 
+// send message from bot to chat
 func sendMessage(msg string, chatID int64) {
 	url := getReqUrl("sendMessage")
 

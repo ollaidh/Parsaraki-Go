@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// ep registered at webhook service
 func ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
 	telegramBotApiSecretToken := request.Header.Get("X-Telegram-Bot-Api-Secret-Token")
 	if telegramBotApiSecretToken != CONFIG.Webhooks.WebhooksSecretToken {
@@ -23,14 +24,6 @@ func ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
 			http.Error(w, "Fail to read request body", http.StatusBadRequest)
 			return
 		}
-
-		// msg := fmt.Sprintf("Got message from username=%s, message_id=%s, message: %s", botMsg.Message.From.Username, strconv.Itoa(botMsg.Message.MessageID), botMsg.Message.Text)
-
-		// fmt.Println(msg)
-		// fmt.Println(string(body))
-
-		// msgBack := fmt.Sprintf("Thank you for your message, you sent '%s'", botMsg.Message.Text)
-		// sendMessage(msgBack, botMsg.Message.Chat.ID)
 
 		commandHandlers := map[string]RequestHandler{
 			"/start":      StartHandler{},
