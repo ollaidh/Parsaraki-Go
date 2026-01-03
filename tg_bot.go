@@ -31,8 +31,13 @@ type BotMessage struct {
 			Username  string `json:"username"`
 			Type      string `json:"type"`
 		} `json:"chat"`
-		Date int64  `json:"date"`
-		Text string `json:"text"`
+		Date     int64  `json:"date"`
+		Text     string `json:"text"`
+		Entities []struct {
+			Offset int    `json:"offset"`
+			Length int    `json:"length"`
+			Type   string `json:"type"`
+		} `json:"entities"`
 	} `json:"message"`
 }
 
