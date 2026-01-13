@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 )
 
@@ -26,15 +25,14 @@ type Config struct {
 	} `json:"webhooks"`
 }
 
-func loadConfig() Config {
+func loadConfig() (Config, error) {
 	data, err := os.ReadFile("config.json")
 
 	if err != nil {
-		log.Println("Failed lo load config from file")
-		log.Fatal(err)
+		return Config{}, err
 	}
 	var config Config
 	json.Unmarshal(data, &config)
-	return config
+	return config, nil
 
 }

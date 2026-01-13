@@ -11,7 +11,10 @@ import (
 )
 
 func main() {
-	config := loadConfig()
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
 	telegramClient := NewTelegramClient(config)
 	telegramClient.pingBot()
 
