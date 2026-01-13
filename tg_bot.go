@@ -42,18 +42,22 @@ type BotMessage struct {
 	} `json:"message"`
 }
 
+type TelegramClient struct {
+	config Config
+}
+
 // get bot url to use methods
-func getReqUrl(method string) string {
+func (tc *TelegramClient) getRequestUrl(method string) string {
 	result, _ := url.JoinPath(
-		CONFIG.TelegramBot.Url,
-		"bot"+CONFIG.TelegramBot.Token,
+		tc.config.TelegramBot.Url,
+		"bot"+tc.config.TelegramBot.Token,
 		method)
 	return result
 }
 
 // check if bot is functioning
-func pingBot() {
-	url := getReqUrl("getMe")
+func (tc *TelegramClient) pingBot() {
+	url := tc.getRequestUrl("getMe")
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Print(err)
@@ -90,8 +94,8 @@ func pingBot() {
 }
 
 // set bot updates webhook
-func setWebhook() {
-	url := getReqUrl("setWebhook")
+func (tc *TelegramClient) setWebhook() {
+	url := tc.getRequestUrl("setWebhook")
 
 	payload := map[string]interface{}{
 		"url":          CONFIG.Webhooks.GatewayWebhooksUrl + CONFIG.Webhooks.GatewayWebhooksEp,
@@ -114,8 +118,8 @@ func setWebhook() {
 }
 
 // send message from bot to chat
-func sendMessage(msg string, chatID int64) {
-	url := getReqUrl("sendMessage")
+func (tc *TelegramClient) sendMessage(msg string, chatID int64) {
+	url := tc.getRequestUrl("sendMessage")
 
 	payload := map[string]interface{}{
 		"chat_id": chatID,

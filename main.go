@@ -17,7 +17,8 @@ func init() {
 }
 
 func main() {
-	pingBot()
+	telegramClient := TelegramClient{}
+	telegramClient.pingBot()
 
 	// EP for Telegram Bot Webhook
 	http.HandleFunc("/bot-message", ProcessBotMessage)
@@ -48,7 +49,7 @@ func main() {
 	}
 
 	// set webhook for bot
-	setWebhook()
+	telegramClient.setWebhook()
 
 	// wait for Ctrl+C sugnal tp stop the app
 	sigCh := make(chan os.Signal, 1)
