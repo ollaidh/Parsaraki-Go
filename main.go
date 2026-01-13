@@ -10,29 +10,24 @@ import (
 	"time"
 )
 
-var CONFIG Config
-
-func init() {
-	CONFIG = loadConfig()
-}
-
 func main() {
-	telegramClient := TelegramClient{}
+	config := loadConfig()
+	telegramClient := NewTelegramClient(config)
 	telegramClient.pingBot()
 
 	// EP for Telegram Bot Webhook
-	http.HandleFunc("/bot-message", ProcessBotMessage)
+	http.HandleFunc("/bot-message", telegramClient.ProcessBotMessage)
 
 	// launch server at 8443 port
 	go func() {
-		if err := http.ListenAndServe(":"+CONFIG.Gateway.Port, nil); err != nil {
+		if err := http.ListenAndServe(":"+config.Gateway.Port, nil); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
 	// use ngrok to get https address for dev
-	if CONFIG.Mode == "DEV" {
-		cmdNgrok, err := startNgrok(CONFIG.Gateway.Port)
+	if config.Mode == "DEV" {
+		cmdNgrok, err := startNgrok(config.Gateway.Port)
 		if err != nil {
 			panic(err)
 		}
@@ -45,7 +40,7 @@ func main() {
 
 		fmt.Println("Ngrok public URL:", urlForWebhook)
 
-		CONFIG.Webhooks.GatewayWebhooksUrl = urlForWebhook
+		config.Webhooks.GatewayWebhooksUrl = urlForWebhook
 	}
 
 	// set webhook for bot

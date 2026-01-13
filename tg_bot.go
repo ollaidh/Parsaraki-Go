@@ -46,6 +46,12 @@ type TelegramClient struct {
 	config Config
 }
 
+func NewTelegramClient(config Config) TelegramClient {
+	return TelegramClient{
+		config: config,
+	}
+}
+
 // get bot url to use methods
 func (tc *TelegramClient) getRequestUrl(method string) string {
 	result, _ := url.JoinPath(
@@ -76,8 +82,8 @@ func (tc *TelegramClient) pingBot() {
 	err = json.Unmarshal(body, &data)
 	if err == nil {
 		receivedId := strconv.Itoa(int(data["result"].(map[string]interface{})["id"].(float64)))
-		if receivedId != CONFIG.TelegramBot.Id {
-			pingError = fmt.Sprintf("Incorrect Id=%s received in response, expected %s", receivedId, CONFIG.TelegramBot.Id)
+		if receivedId != tc.config.TelegramBot.Id {
+			pingError = fmt.Sprintf("Incorrect Id=%s received in response, expected %s", receivedId, tc.config.TelegramBot.Id)
 		}
 
 	} else {
@@ -98,8 +104,8 @@ func (tc *TelegramClient) setWebhook() {
 	url := tc.getRequestUrl("setWebhook")
 
 	payload := map[string]interface{}{
-		"url":          CONFIG.Webhooks.GatewayWebhooksUrl + CONFIG.Webhooks.GatewayWebhooksEp,
-		"secret_token": CONFIG.Webhooks.WebhooksSecretToken,
+		"url":          tc.config.Webhooks.GatewayWebhooksUrl + tc.config.Webhooks.GatewayWebhooksEp,
+		"secret_token": tc.config.Webhooks.WebhooksSecretToken,
 	}
 
 	body, _ := json.Marshal(payload)
@@ -136,4 +142,51 @@ func (tc *TelegramClient) sendMessage(msg string, chatID int64) {
 	rrr, _ := io.ReadAll(response.Body)
 
 	fmt.Println(string(rrr))
+}
+
+// ep registered at webhook service
+func (tc *TelegramClient) ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
+	telegramBotApiSecretToken := request.Header.Get("X-Telegram-Bot-Api-Secret-Token")
+	if telegramBotApiSecretToken != tc.config.Webhooks.WebhooksSecretToken {
+		http.Error(w, "Incorrect secret token in request header!", http.StatusBadRequest)
+	} else {
+		println("GOT REQUEST")
+		defer request.Body.Close()
+
+		body, err := io.ReadAll(request.Body)
+
+		var botMsg BotMessage
+		err = json.Unmarshal(body, &botMsg)
+
+		if err != nil {
+			http.Error(w, "Fail to read request body", http.StatusBadRequest)
+			return
+		}
+
+		commandHandlers := map[string]RequestHandler{
+			"/start":      StartHandler{},
+			"/info":       BotInfoHandler{},
+			"/statistics": GetStatisticsHandler{},
+			"other":       NotACommandHandler{},
+		}
+
+		entities := botMsg.Message.Entities
+
+		var cmd string
+
+		if len(entities) > 0 {
+			cmd = botMsg.Message.Text
+		} else {
+			cmd = "others"
+		}
+
+		commandHandler, ok := commandHandlers[cmd]
+		if !ok {
+			commandHandler = NotACommandHandler{}
+		}
+
+		commandHandler.Execute(botMsg)
+
+	}
+
 }
