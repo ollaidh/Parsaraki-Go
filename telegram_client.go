@@ -123,14 +123,21 @@ func (tc *TelegramClient) setWebhook() {
 
 }
 
-// send message from bot to chat
-func (tc *TelegramClient) sendMessage(msg string, chatID int64) {
-	url := tc.getRequestUrl("sendMessage")
+func (tc *TelegramClient) sendContent(chatID int64, actionType string, content string) (string, error) {
+	url := tc.getRequestUrl(actionType) // ex actionType = "sendMessage"
 
-	payload := map[string]interface{}{
-		"chat_id": chatID,
-		"text":    msg,
+	payloadGetters := map[string]PayloadGetter{
+		"sendMessage": MessagePayloadGetter{},
+		"sendPhoto":   PhotoPayloadGetter{},
 	}
+
+	payloadGetter, ok := payloadGetters[actionType]
+
+	if !ok {
+		return "", fmt.Errorf("Unknown action type: %v", actionType)
+	}
+
+	payload := payloadGetter.GetPayload(content, chatID)
 
 	body, _ := json.Marshal(payload)
 
@@ -139,9 +146,10 @@ func (tc *TelegramClient) sendMessage(msg string, chatID int64) {
 		fmt.Print(err)
 	}
 
-	rrr, _ := io.ReadAll(response.Body)
+	resp, _ := io.ReadAll(response.Body)
+	fmt.Println(string(resp))
+	return string(resp), nil
 
-	fmt.Println(string(rrr))
 }
 
 // ep registered at webhook service
@@ -151,41 +159,23 @@ func (tc *TelegramClient) ProcessBotMessage(w http.ResponseWriter, request *http
 		http.Error(w, "Incorrect secret token in request header!", http.StatusBadRequest)
 	} else {
 		println("GOT REQUEST")
-		defer request.Body.Close()
 
-		body, err := io.ReadAll(request.Body)
-
-		var botMsg BotMessage
-		err = json.Unmarshal(body, &botMsg)
+		botMsg, err := parseBotMessage(request)
 
 		if err != nil {
 			http.Error(w, "Fail to read request body", http.StatusBadRequest)
+			println("Failed to process bot message")
 			return
 		}
 
-		commandHandlers := map[string]RequestHandler{
-			"/start":      StartHandler{},
-			"/info":       BotInfoHandler{},
-			"/statistics": GetStatisticsHandler{},
-			"other":       NotACommandHandler{},
-		}
+		//cmd, err := getCommand(botMsg)
 
-		entities := botMsg.Message.Entities
+		//.... выбор команды и соответственно отправки
 
-		var cmd string
+		action := "sendMessage"
+		content := "testMessage"
 
-		if len(entities) > 0 {
-			cmd = botMsg.Message.Text
-		} else {
-			cmd = "others"
-		}
-
-		commandHandler, ok := commandHandlers[cmd]
-		if !ok {
-			commandHandler = NotACommandHandler{}
-		}
-
-		commandHandler.Execute(botMsg)
+		tc.sendContent(botMsg.Message.Chat.ID, action, content)
 
 	}
 
