@@ -175,6 +175,11 @@ func (tc *TelegramClient) ProcessBotMessage(w http.ResponseWriter, request *http
 		action := "sendMessage"
 		content := "testMessage"
 
+		kc := NewKafkaClient("test-topic")
+
+		kc.writeMessage("test-topic", content)
+		kc.readMessage("test-topic")
+
 		tc.sendContent(botMsg.Message.Chat.ID, action, content)
 
 	}
