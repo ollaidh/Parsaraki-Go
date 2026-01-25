@@ -1,4 +1,4 @@
-import json
+from dotenv import load_dotenv, set_key
 from pyngrok import ngrok
 import time
 
@@ -19,19 +19,14 @@ def start_ngrok() -> str:
     return result
 
 
-def update_config_with_url(url: str):
-    with open("config.json", "r") as f:
-        data = json.load(f)
-
-    data["webhooks"]["gatewayWebhooksUrl"] = url
-
-    with open("config.json", "w") as f:
-        json.dump(data, f, indent=4)
+def update_config_with_url(url: str, env_filepath: str):
+    load_dotenv(env_filepath)
+    set_key(env_filepath, "WEBHOOKS_URL", url)
 
 
 if __name__ == "__main__":
     ngrok_public_url = start_ngrok()
-    update_config_with_url(ngrok_public_url)
+    update_config_with_url(ngrok_public_url, ".env")
 
     try:
         while True:

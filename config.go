@@ -1,38 +1,43 @@
 package main
 
 import (
-	"encoding/json"
-	"os"
+	"log"
+
+	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
-	Mode        string `json:"mode"`
+	Mode        string `env:"mode"`
 	TelegramBot struct {
-		Url                 string `json:"url"`
-		Token               string `json:"token"`
-		Id                  string `json:"id"`
-		WebhooksUrl         string `json:"webhooksUrl"`
-		WebhooksEp          string `json:"webhooksEp"`
-		WebhooksSecretToken string `json:"webhooksSecretToken"`
-	} `json:"telegramBot"`
+		Url   string `env:"url"`
+		Token string `env:"token"`
+		Id    string `env:"id"`
+	} `env:"telegramBot"`
 	Gateway struct {
-		Port string `json:"port"`
-	} `json:"gateway"`
+		Port string `env:"port"`
+	} `env:"gateway"`
 	Webhooks struct {
-		GatewayWebhooksUrl  string `json:"gatewayWebhooksUrl"`
-		GatewayWebhooksEp   string `json:"gatewayWebhooksEp"`
-		WebhooksSecretToken string `json:"webhooksSecretToken"`
+		Url   string `env:"gatewayWebhooksUrl"`
+		Ep    string `env:"gatewayWebhooksEp"`
+		Token string `env:"webhooksSecretToken"`
 	} `json:"webhooks"`
 }
 
 func loadConfig() (Config, error) {
-	data, err := os.ReadFile("config.json")
-
+	err := godotenv.Load(".env")
 	if err != nil {
+		log.Println("Failed to load config", err)
 		return Config{}, err
 	}
-	var config Config
-	json.Unmarshal(data, &config)
-	return config, nil
+
+	var cfg Config
+	err = envconfig.Process("", &cfg)
+	if err != nil {
+		log.Println("Failed to parse config", err)
+		return Config{}, err
+	}
+
+	return cfg, nil
 
 }

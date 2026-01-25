@@ -104,8 +104,8 @@ func (tc *TelegramClient) setWebhook() {
 	url := tc.getRequestUrl("setWebhook")
 
 	payload := map[string]interface{}{
-		"url":          tc.config.Webhooks.GatewayWebhooksUrl + tc.config.Webhooks.GatewayWebhooksEp,
-		"secret_token": tc.config.Webhooks.WebhooksSecretToken,
+		"url":          tc.config.Webhooks.Url + tc.config.Webhooks.Ep,
+		"secret_token": tc.config.Webhooks.Token,
 	}
 
 	body, _ := json.Marshal(payload)
@@ -155,7 +155,7 @@ func (tc *TelegramClient) sendContent(chatID int64, actionType string, content s
 // ep registered at webhook service
 func (tc *TelegramClient) ProcessBotMessage(w http.ResponseWriter, request *http.Request) {
 	telegramBotApiSecretToken := request.Header.Get("X-Telegram-Bot-Api-Secret-Token")
-	if telegramBotApiSecretToken != tc.config.Webhooks.WebhooksSecretToken {
+	if telegramBotApiSecretToken != tc.config.Webhooks.Token {
 		http.Error(w, "Incorrect secret token in request header!", http.StatusBadRequest)
 	} else {
 		println("GOT REQUEST")
