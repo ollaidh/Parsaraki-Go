@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
@@ -27,24 +26,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-
-	// use ngrok to get https address for dev
-	if config.Mode == "DEV" {
-		cmdNgrok, err := startNgrok(config.Gateway.Port)
-		if err != nil {
-			panic(err)
-		}
-		defer cmdNgrok.Process.Kill()
-
-		urlForWebhook, err := waitForURL(5 * time.Second)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println("Ngrok public URL:", urlForWebhook)
-
-		telegramClient.config.Webhooks.GatewayWebhooksUrl = urlForWebhook
-	}
 
 	// set webhook for bot
 	telegramClient.setWebhook()
