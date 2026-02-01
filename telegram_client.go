@@ -42,6 +42,22 @@ type BotMessage struct {
 	} `json:"message"`
 }
 
+type BotGetMeResponse struct {
+	Ok     bool `json:"ok"`
+	Result struct {
+		Id                      int    `json:"id"`
+		IsBot                   bool   `json:"is_bot"`
+		FirstName               string `json:"first_name"`
+		Username                string `json:"username"`
+		CanJoinGroups           bool   `json:"can_join_groups"`
+		CanReadAllGroupMessages bool   `json:"can_read_all_group_messages"`
+		SupportsInlineQueries   bool   `json:"supports_inline_queries"`
+		CanConnectToBusiness    bool   `json:"can_connect_to_business"`
+		HasMainWebApp           bool   `json:"has_main_web_app"`
+		HasTopicsEnabled        bool   `json:"has_topics_enabled"`
+	}
+}
+
 type TelegramClient struct {
 	config Config
 }
@@ -76,19 +92,15 @@ func (tc *TelegramClient) pingBot() {
 
 	}
 
-	body, err := io.ReadAll(response.Body)
-	var data map[string]interface{}
+	botGetMeResponse, err := parseCheckBotMessage(response)
 
-	err = json.Unmarshal(body, &data)
 	if err == nil {
-		receivedId := strconv.Itoa(int(data["result"].(map[string]interface{})["id"].(float64)))
-		if receivedId != tc.config.TelegramBot.Id {
-			pingError = fmt.Sprintf("Incorrect Id=%s received in response, expected %s", receivedId, tc.config.TelegramBot.Id)
+		if strconv.Itoa(botGetMeResponse.Result.Id) != tc.config.TelegramBot.Id {
+			pingError = fmt.Sprintf("Incorrect Id=%s received in response, expected %s", botGetMeResponse.Result.Id, tc.config.TelegramBot.Id)
 		}
 
 	} else {
-		bodyString := string(body)
-		pingError = fmt.Sprintf("Failed to parse response body: %s Error: %s", bodyString, err)
+		pingError = fmt.Sprintf("Failed to parse response body: %s Error: %s", response.Body, err)
 	}
 
 	if pingError != "" {

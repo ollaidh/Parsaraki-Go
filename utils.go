@@ -10,15 +10,27 @@ func parseBotMessage(request *http.Request) (BotMessage, error) {
 	defer request.Body.Close()
 	var botMsg BotMessage
 
-	body, err := io.ReadAll(request.Body)
-	err = json.Unmarshal(body, &botMsg)
+	body, _ := io.ReadAll(request.Body)
+	err := json.Unmarshal(body, &botMsg)
 	if err != nil {
 		return BotMessage{}, err
 	}
 	return botMsg, nil
 }
 
-func getCommand(botMsg BotMessage) (string, error) {
+func parseCheckBotMessage(request *http.Response) (BotGetMeResponse, error) {
+	defer request.Body.Close()
+	var botGetMeResponse BotGetMeResponse
+
+	body, _ := io.ReadAll(request.Body)
+	err := json.Unmarshal(body, &botGetMeResponse)
+	if err != nil {
+		return BotGetMeResponse{}, err
+	}
+	return botGetMeResponse, nil
+}
+
+func getCommand(botMsg *BotMessage) (string, error) {
 	entities := botMsg.Message.Entities
 
 	var cmd string
