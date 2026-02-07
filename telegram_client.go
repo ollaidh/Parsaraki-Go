@@ -59,12 +59,14 @@ type BotGetMeResponse struct {
 }
 
 type TelegramClient struct {
-	config Config
+	config       Config
+	msgProcessor MessageProcessor
 }
 
-func NewTelegramClient(config Config) TelegramClient {
+func NewTelegramClient(config Config, msgProcessor MessageProcessor) TelegramClient {
 	return TelegramClient{
-		config: config,
+		config:       config,
+		msgProcessor: msgProcessor,
 	}
 }
 
@@ -187,12 +189,7 @@ func (tc *TelegramClient) ProcessBotMessage(w http.ResponseWriter, request *http
 		action := "sendMessage"
 		content := botMsg.Message.Text
 
-		kc := NewKafkaClient("test-topic")
-
-		kc.writeMessage(content)
-		msgFromKafka, _ := kc.readMessage("test-topic")
-
-		msgResponseToBot := fmt.Sprintf("Received from Kafka (topic: %s), message: %s", msgFromKafka.Topic, string(msgFromKafka.Value))
+		msgResponseToBot := tc.msgProcessor.ProcessMsg(content)
 
 		tc.sendContent(botMsg.Message.Chat.ID, action, msgResponseToBot)
 

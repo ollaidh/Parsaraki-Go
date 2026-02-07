@@ -14,7 +14,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
-	telegramClient := NewTelegramClient(config)
+
+	msgProcessor := NewKafkaClient("test-topic")
+
+	telegramClient := NewTelegramClient(config, &msgProcessor)
 	telegramClient.pingBot()
 
 	// EP for Telegram Bot Webhook
