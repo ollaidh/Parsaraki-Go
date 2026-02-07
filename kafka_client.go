@@ -22,6 +22,7 @@ func NewKafkaClient(topic string) KafkaClient {
 		reader: kafka.NewReader(kafka.ReaderConfig{
 			Brokers: []string{"localhost:9092"},
 			Topic:   topic,
+			GroupID: "my-group",
 		}),
 	}
 }
@@ -36,10 +37,10 @@ func (kc *KafkaClient) Close() error {
 	return nil
 }
 
-func (kc *KafkaClient) writeMessage(topic string, message string) {
+func (kc *KafkaClient) writeMessage(message string) {
 	err := kc.writer.WriteMessages(context.Background(),
 		kafka.Message{
-			Value: []byte("Hello World!"),
+			Value: []byte(message),
 		},
 	)
 	if err != nil {

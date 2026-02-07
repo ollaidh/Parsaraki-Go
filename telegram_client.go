@@ -139,8 +139,8 @@ func (tc *TelegramClient) sendContent(chatID int64, actionType string, content s
 	url := tc.getRequestUrl(actionType) // ex actionType = "sendMessage"
 
 	payloadGetters := map[string]PayloadGetter{
-		"sendMessage": MessagePayloadGetter{},
-		"sendPhoto":   PhotoPayloadGetter{},
+		"sendMessage": &MessagePayloadGetter{},
+		"sendPhoto":   &PhotoPayloadGetter{},
 	}
 
 	payloadGetter, ok := payloadGetters[actionType]
@@ -185,14 +185,16 @@ func (tc *TelegramClient) ProcessBotMessage(w http.ResponseWriter, request *http
 		//.... выбор команды и соответственно отправки
 
 		action := "sendMessage"
-		content := "testMessage"
+		content := botMsg.Message.Text
 
 		kc := NewKafkaClient("test-topic")
 
-		kc.writeMessage("test-topic", content)
-		kc.readMessage("test-topic")
+		kc.writeMessage(content)
+		msgFromKafka, _ := kc.readMessage("test-topic")
 
-		tc.sendContent(botMsg.Message.Chat.ID, action, content)
+		msgResponseToBot := fmt.Sprintf("Received from Kafka (topic: %s), message: %s", msgFromKafka.Topic, string(msgFromKafka.Value))
+
+		tc.sendContent(botMsg.Message.Chat.ID, action, msgResponseToBot)
 
 	}
 
