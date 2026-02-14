@@ -1,4 +1,4 @@
-package main
+package telegram
 
 type PayloadGetter interface {
 	GetPayload(string, int64) map[string]interface{}

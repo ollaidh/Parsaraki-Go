@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"log"
@@ -24,7 +24,7 @@ type Config struct {
 	} `json:"webhooks"`
 }
 
-func loadConfig() (Config, error) {
+func LoadConfig() (Config, error) {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println("Failed to load config", err)

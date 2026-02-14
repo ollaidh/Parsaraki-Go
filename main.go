@@ -6,22 +6,29 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"parsaraki-go/config"
+	telegramapi "parsaraki-go/internal/app/api/telegram"
+	"parsaraki-go/internal/infrastructure/kafka"
+	"parsaraki-go/internal/infrastructure/telegram"
 	"syscall"
 )
 
 func main() {
-	config, err := loadConfig()
+	config, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	msgProcessor := NewKafkaClient("test-topic")
+	telegramClient := telegram.NewTelegramClient(&config)
+	kafkaProducer := kafka.NewKafkaProducer("test-topic")
 
-	telegramClient := NewTelegramClient(config, &msgProcessor)
-	telegramClient.pingBot()
+	telegramHandler := telegramapi.TelegramHandler{
+		TgClient:      telegramClient,
+		KafkaProducer: kafkaProducer,
+	}
 
 	// EP for Telegram Bot Webhook
-	http.HandleFunc("/bot-message", telegramClient.ProcessBotMessage)
+	http.HandleFunc("/bot-message", telegramHandler.ProcessBotMessage)
 
 	// launch server at 8443 port
 	go func() {
@@ -31,7 +38,6 @@ func main() {
 	}()
 
 	// set webhook for bot
-	telegramClient.setWebhook()
 
 	// wait for Ctrl+C sugnal tp stop the app
 	sigCh := make(chan os.Signal, 1)

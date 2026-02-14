@@ -1,4 +1,4 @@
-package main
+package telegram
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func parseBotMessage(request *http.Request) (BotMessage, error) {
+func ParseBotMessage(request *http.Request) (BotMessage, error) {
 	defer request.Body.Close()
 	var botMsg BotMessage
 

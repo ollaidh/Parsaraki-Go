@@ -63,9 +63,9 @@ type TelegramClient struct {
 	Config config.Config
 }
 
-func NewTelegramClient(config config.Config) TelegramClient {
+func NewTelegramClient(config *config.Config) TelegramClient {
 	tgClient := TelegramClient{
-		Config: config,
+		Config: *config,
 	}
 	tgClient.pingBot()
 	tgClient.setWebhook()
