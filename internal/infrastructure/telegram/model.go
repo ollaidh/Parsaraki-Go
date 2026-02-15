@@ -1,9 +1,11 @@
 package telegram
 
+// ADD move PayloadGetter to separate file
 type PayloadGetter interface {
 	GetPayload(string, int64) map[string]interface{}
 }
 
+// ADD maybe each realization to separate file
 type MessagePayloadGetter struct {
 }
 

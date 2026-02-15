@@ -60,12 +60,12 @@ type BotGetMeResponse struct {
 }
 
 type TelegramClient struct {
-	Config config.Config
+	config config.Config
 }
 
 func NewTelegramClient(config *config.Config) TelegramClient {
 	tgClient := TelegramClient{
-		Config: *config,
+		config: *config,
 	}
 	tgClient.pingBot()
 	tgClient.setWebhook()
@@ -76,8 +76,8 @@ func NewTelegramClient(config *config.Config) TelegramClient {
 // get bot url to use methods
 func (tc *TelegramClient) getRequestUrl(method string) string {
 	result, _ := url.JoinPath(
-		tc.Config.TelegramBot.Url,
-		"bot"+tc.Config.TelegramBot.Token,
+		tc.config.TelegramBot.Url,
+		"bot"+tc.config.TelegramBot.Token,
 		method)
 	return result
 }
@@ -100,8 +100,8 @@ func (tc *TelegramClient) pingBot() {
 	botGetMeResponse, err := parseCheckBotMessage(response)
 
 	if err == nil {
-		if strconv.Itoa(botGetMeResponse.Result.Id) != tc.Config.TelegramBot.Id {
-			pingError = fmt.Sprintf("Incorrect Id=%s received in response, expected %s", botGetMeResponse.Result.Id, tc.Config.TelegramBot.Id)
+		if strconv.Itoa(botGetMeResponse.Result.Id) != tc.config.TelegramBot.Id {
+			pingError = fmt.Sprintf("Incorrect Id=%s received in response, expected %s", botGetMeResponse.Result.Id, tc.config.TelegramBot.Id)
 		}
 
 	} else {
@@ -121,8 +121,8 @@ func (tc *TelegramClient) setWebhook() {
 	url := tc.getRequestUrl("setWebhook")
 
 	payload := map[string]interface{}{
-		"url":          tc.Config.Webhooks.Url + tc.Config.Webhooks.Ep,
-		"secret_token": tc.Config.Webhooks.Token,
+		"url":          tc.config.Webhooks.Url + tc.config.Webhooks.Ep,
+		"secret_token": tc.config.Webhooks.Token,
 	}
 
 	body, _ := json.Marshal(payload)

@@ -28,7 +28,7 @@ func (kp *KafkaProducer) Close() error {
 	return nil
 }
 
-func (kc *KafkaProducer) writeMessage(message string) {
+func (kc *KafkaProducer) WriteMessage(message string) {
 	err := kc.writer.WriteMessages(context.Background(),
 		kafka.Message{
 			Value: []byte(message),
