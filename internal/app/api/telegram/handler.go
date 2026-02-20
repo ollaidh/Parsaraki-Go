@@ -1,6 +1,7 @@
 package telegramapi
 
 import (
+	"fmt"
 	"net/http"
 	"parsaraki-go/config"
 	"parsaraki-go/internal/infrastructure/telegram"
@@ -28,17 +29,15 @@ func (th *TelegramHandler) ProcessBotMessage(w http.ResponseWriter, request *htt
 	if telegramBotApiSecretToken != th.config.Webhooks.Token {
 		http.Error(w, "Incorrect secret token in request header!", http.StatusBadRequest)
 	} else {
-		println("GOT REQUEST")
 
 		botMsg, err := telegram.ParseBotMessage(request)
+		fmt.Printf("\nGOT REQUEST to /bot-message endpoint: %s", botMsg.Message.Text)
 
 		if err != nil {
 			http.Error(w, "Fail to read request body", http.StatusBadRequest)
 			println("Failed to process bot message")
 			return
 		}
-
-		println(botMsg.Message.Text)
 
 		th.msgProducer.WriteMessage(botMsg.Message.Text)
 

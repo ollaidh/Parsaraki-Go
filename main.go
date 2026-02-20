@@ -8,7 +8,8 @@ import (
 	"os/signal"
 	"parsaraki-go/config"
 	telegramapi "parsaraki-go/internal/app/api/telegram"
-	"parsaraki-go/internal/infrastructure/kafka"
+	msgconsumer "parsaraki-go/internal/app/consumers"
+	msgproducer "parsaraki-go/internal/infrastructure/kafka"
 	"syscall"
 )
 
@@ -19,7 +20,7 @@ func main() {
 	}
 
 	// telegramClient := telegram.NewTelegramClient(&config)
-	msgProducer := kafka.NewKafkaProducer("all-messages")
+	msgProducer := msgproducer.NewKafkaProducer("all-messages")
 
 	telegramHandler := telegramapi.NewTelegramHandler(&msgProducer, config)
 
@@ -31,6 +32,14 @@ func main() {
 		if err := http.ListenAndServe(":"+config.Gateway.Port, nil); err != nil {
 			log.Fatal(err)
 		}
+	}()
+
+	// Create and run consumer
+	consumer := msgconsumer.NewKafkaConsumer("all-messages")
+	defer consumer.Close()
+
+	go func() {
+		consumer.RunConsumer()
 	}()
 
 	// wait for Ctrl+C signal tp stop the app

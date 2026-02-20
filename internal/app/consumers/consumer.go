@@ -1,4 +1,4 @@
-package kafka
+package msgconsumer
 
 import (
 	"context"
@@ -31,11 +31,18 @@ func (kc *KafkaConsumer) Close() error {
 func (kc *KafkaConsumer) readMessage() (kafka.Message, error) {
 	msg, err := kc.reader.ReadMessage(context.Background())
 	if err != nil {
-		fmt.Printf("Kafka read error: %s", err)
 		return kafka.Message{}, err
 	}
-
-	fmt.Printf("Kafka read message: %s, topic: %s \n", msg.Value, msg.Topic)
-
 	return msg, nil
+}
+
+func (kc *KafkaConsumer) RunConsumer() {
+	for {
+		msg, err := kc.readMessage()
+		if err != nil {
+			fmt.Printf("Error reading message from Kafka: %s", err)
+			continue
+		}
+		fmt.Printf("\nGot message from Kafka: %s, topic: %s", msg.Value, msg.Topic)
+	}
 }

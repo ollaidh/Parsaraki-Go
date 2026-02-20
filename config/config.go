@@ -13,7 +13,6 @@ type Config struct {
 		Url   string `env:"url"`
 		Token string `env:"token"`
 		Id    string `env:"id"`
-		// ADD secret key
 	} `env:"telegramBot"`
 	Gateway struct {
 		Port string `env:"port"`
