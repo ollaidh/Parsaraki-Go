@@ -3,6 +3,7 @@ package msgconsumer
 import (
 	"context"
 	"fmt"
+	"parsaraki-go/internal/repository"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -36,13 +37,15 @@ func (kc *KafkaConsumer) readMessage() (kafka.Message, error) {
 	return msg, nil
 }
 
-func (kc *KafkaConsumer) RunConsumer() {
+func (kc *KafkaConsumer) RunConsumer(repo repository.Repository) {
 	for {
 		msg, err := kc.readMessage()
 		if err != nil {
 			fmt.Printf("Error reading message from Kafka: %s", err)
 			continue
 		}
+
 		fmt.Printf("\nGot message from Kafka: %s, topic: %s", msg.Value, msg.Topic)
+		repo.SaveBotRequest(msg.Value)
 	}
 }
