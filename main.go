@@ -10,6 +10,7 @@ import (
 	telegramapi "parsaraki-go/internal/app/api/telegram"
 	msgconsumer "parsaraki-go/internal/app/consumers"
 	msgproducer "parsaraki-go/internal/infrastructure/kafka"
+	"parsaraki-go/internal/repository"
 	"syscall"
 )
 
@@ -38,8 +39,10 @@ func main() {
 	consumer := msgconsumer.NewKafkaConsumer("all-messages")
 	defer consumer.Close()
 
+	Repo := repository.NewMemoryDB()
+
 	go func() {
-		consumer.RunConsumer()
+		consumer.RunConsumer(&Repo)
 	}()
 
 	// wait for Ctrl+C signal tp stop the app
