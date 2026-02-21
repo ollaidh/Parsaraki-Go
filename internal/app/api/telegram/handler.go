@@ -1,6 +1,7 @@
 package telegramapi
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"parsaraki-go/config"
@@ -8,7 +9,7 @@ import (
 )
 
 type MessageBroker interface {
-	WriteMessage(message string)
+	WriteMessage(message json.RawMessage)
 }
 
 func NewTelegramHandler(msgBroker MessageBroker, config config.Config) *TelegramHandler {
@@ -39,7 +40,9 @@ func (th *TelegramHandler) ProcessBotMessage(w http.ResponseWriter, request *htt
 			return
 		}
 
-		th.msgProducer.WriteMessage(botMsg.Message.Text)
+		msgForBroker, err := json.Marshal(botMsg)
+
+		th.msgProducer.WriteMessage(msgForBroker)
 
 	}
 

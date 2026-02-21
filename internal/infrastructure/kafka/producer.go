@@ -2,6 +2,7 @@ package msgproducer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/segmentio/kafka-go"
@@ -28,7 +29,7 @@ func (kp *KafkaProducer) Close() error {
 	return nil
 }
 
-func (kc *KafkaProducer) WriteMessage(message string) {
+func (kc *KafkaProducer) WriteMessage(message json.RawMessage) {
 	err := kc.writer.WriteMessages(context.Background(),
 		kafka.Message{
 			Value: []byte(message),
