@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,11 +11,19 @@ import (
 	telegramapi "parsaraki-go/internal/app/api/telegram"
 	msgconsumer "parsaraki-go/internal/app/consumers"
 	msgproducer "parsaraki-go/internal/infrastructure/kafka"
-	"parsaraki-go/internal/repository"
 	"syscall"
+	"time"
 )
 
 func main() {
+
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
 	config, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
@@ -36,19 +45,42 @@ func main() {
 	}()
 
 	// Create and run consumer
+
+	// repo := repository.NewMemoryDB()
+
 	consumer := msgconsumer.NewKafkaConsumer("all-messages")
 	defer consumer.Close()
 
-	Repo := repository.NewMemoryDB()
-
 	go func() {
-		consumer.RunConsumer(&Repo)
+		consumer.RunConsumer(ctx)
 	}()
 
 	// wait for Ctrl+C signal tp stop the app
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	<-sigCh
+	// sigCh := make(chan os.Signal, 1)
+	// signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	// <-sigCh
+
+	<-ctx.Done() // waiting shutdown
+
+	// ADD wait group wg, pass to consumer
+
+	// Add channel
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		log.Println("shutdown timeout")
+	}
+
+	log.Println("consumer stopped")
+
+	// ADD server shutdown
+	// ADD Consumer shutdown
 
 	fmt.Println("\nExiting...")
 
