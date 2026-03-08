@@ -29,13 +29,6 @@ func NewKafkaConsumer(topic string, repo repository.Repository) KafkaConsumer {
 	}
 }
 
-func (kc *KafkaConsumer) Close() error {
-	if err := kc.reader.Close(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (kc *KafkaConsumer) readMessage(ctx context.Context) (kafka.Message, error) {
 	msg, err := kc.reader.ReadMessage(ctx)
 	if err != nil {
@@ -44,7 +37,7 @@ func (kc *KafkaConsumer) readMessage(ctx context.Context) (kafka.Message, error)
 	return msg, nil
 }
 
-func (kc *KafkaConsumer) RunConsumer(ctx context.Context) {
+func (kc *KafkaConsumer) Run(ctx context.Context) {
 	for {
 		if ctx.Err() != nil {
 			break
@@ -53,15 +46,15 @@ func (kc *KafkaConsumer) RunConsumer(ctx context.Context) {
 		// ??? в readMessage нужно передавать другой контекст с таймаутом? Где его создавать?
 		msg, err := kc.readMessage(ctx)
 		if err != nil { // not handling context cancellation here, just logging error and continue
-			fmt.Printf("Error reading message from Kafka: %s", err)
+			fmt.Printf("Error reading message from Kafka: %s\n", err)
 			continue
 		}
 
-		fmt.Printf("\nGot message from Kafka: %s, topic: %s", msg.Value, msg.Topic)
+		fmt.Printf("Got message from Kafka: %s, topic: %s\n", msg.Value, msg.Topic)
 
 		var botMsg telegram.BotMessage
 		err = json.Unmarshal(msg.Value, &botMsg)
 		kc.repo.SaveBotRequest(botMsg)
 	}
-	log.Println("consumer stopped")
+	log.Println("Consumer stopped")
 }

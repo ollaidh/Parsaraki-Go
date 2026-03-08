@@ -48,14 +48,11 @@ func main() {
 	repo := inmemoryrepo.NewMemoryDB()
 
 	consumer := msgconsumer.NewKafkaConsumer("all-messages", &repo)
-	defer consumer.Close()
 
-	go func() {
-		consumer.RunConsumer(ctx)
-	}()
+	consumer.Run(ctx)
 
 	// ADD server shutdown
 
-	fmt.Println("\nExiting...")
+	fmt.Println("Exiting...")
 
 }
