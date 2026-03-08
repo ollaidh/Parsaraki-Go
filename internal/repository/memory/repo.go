@@ -1,4 +1,4 @@
-package repository
+package inmemoryrepo
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ func NewMemoryDB() InMemoryRepo {
 }
 
 func (md *InMemoryRepo) SaveBotRequest(botMsg telegram.BotMessage) error {
-	fmt.Printf("Saved to DB")
 	md.messages = append(md.messages, botMsg)
+	fmt.Printf("Message saved: %v\n", md.messages)
 	return nil
 }

@@ -11,12 +11,11 @@ import (
 	telegramapi "parsaraki-go/internal/app/api/telegram"
 	msgconsumer "parsaraki-go/internal/app/consumers"
 	msgproducer "parsaraki-go/internal/infrastructure/kafka"
+	inmemoryrepo "parsaraki-go/internal/repository/memory"
 	"syscall"
-	"time"
 )
 
 func main() {
-
 	ctx, stop := signal.NotifyContext(
 		context.Background(),
 		os.Interrupt,
@@ -46,41 +45,16 @@ func main() {
 
 	// Create and run consumer
 
-	// repo := repository.NewMemoryDB()
+	repo := inmemoryrepo.NewMemoryDB()
 
-	consumer := msgconsumer.NewKafkaConsumer("all-messages")
+	consumer := msgconsumer.NewKafkaConsumer("all-messages", &repo)
 	defer consumer.Close()
 
 	go func() {
 		consumer.RunConsumer(ctx)
 	}()
 
-	// wait for Ctrl+C signal tp stop the app
-	// sigCh := make(chan os.Signal, 1)
-	// signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	// <-sigCh
-
-	<-ctx.Done() // waiting shutdown
-
-	// ADD wait group wg, pass to consumer
-
-	// Add channel
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-	case <-time.After(10 * time.Second):
-		log.Println("shutdown timeout")
-	}
-
-	log.Println("consumer stopped")
-
 	// ADD server shutdown
-	// ADD Consumer shutdown
 
 	fmt.Println("\nExiting...")
 
