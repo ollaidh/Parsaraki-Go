@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"parsaraki-go/config"
+	telegramemulator "parsaraki-go/external/telegram_emulator"
 	telegramapi "parsaraki-go/internal/app/api/telegram"
 	msgconsumer "parsaraki-go/internal/app/consumers"
 	msgproducer "parsaraki-go/internal/infrastructure/kafka"
@@ -37,10 +38,15 @@ func main() {
 	http.HandleFunc("/bot-message", telegramHandler.ProcessBotMessage)
 
 	// launch server at 8443 port
-	go func() {
+	go func() { // HOW to gracefully shutdown this??
 		if err := http.ListenAndServe(":"+config.Gateway.Port, nil); err != nil {
 			log.Fatal(err)
 		}
+	}()
+
+	go func() {
+		tgMsgEmulator := telegramemulator.NewTelegramMessagesEmulator()
+		tgMsgEmulator.SendMessages(ctx, "http://127.0.0.1:8443/bot-message")
 	}()
 
 	// Create and run consumer
@@ -48,9 +54,7 @@ func main() {
 	repo := inmemoryrepo.NewMemoryDB()
 
 	consumer := msgconsumer.NewKafkaConsumer("all-messages", &repo)
-
-	consumer.Run(ctx)
-
+	consumer.Consume(ctx)
 	// ADD server shutdown
 
 	fmt.Println("Exiting...")
