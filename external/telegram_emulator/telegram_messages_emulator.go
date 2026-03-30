@@ -44,7 +44,7 @@ type TelegramMessageEmulated struct {
 
 type TelegramMessagesEmulator struct{}
 
-func (tme TelegramMessagesEmulator) CreateMessage() TelegramMessageEmulated {
+func (tme *TelegramMessagesEmulator) CreateMessage() TelegramMessageEmulated {
 	currText := fmt.Sprintf("Fake Telegram Message: %s", time.Now())
 	return TelegramMessageEmulated{
 		UpdateID: rand.IntN(1_000_000),
@@ -72,7 +72,7 @@ func (tme TelegramMessagesEmulator) CreateMessage() TelegramMessageEmulated {
 	}
 }
 
-func (tme TelegramMessagesEmulator) SendMessages(ctx context.Context, url string) {
+func (tme *TelegramMessagesEmulator) SendMessages(ctx context.Context, url string) {
 	for {
 		msg := tme.CreateMessage()
 		jsonData, _ := json.Marshal(msg)
